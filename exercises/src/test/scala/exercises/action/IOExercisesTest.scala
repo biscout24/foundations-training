@@ -4,11 +4,16 @@ import java.time.Instant
 
 import exercises.action.IOExercises._
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.must.Matchers.{be, noException}
+import org.scalatest.verbs.ShouldVerb
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 import scala.collection.mutable.ListBuffer
 
-class IOExercisesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks {
+class IOExercisesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks with ShouldVerb {
+
+  import org.scalatest.words._
+  import org.scalatest.matchers._
 
   /////////////////////////
   // 1. Smart constructors
@@ -28,6 +33,7 @@ class IOExercisesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks {
 
   test("effect") {
     // TODO
+    noException should be thrownBy (IO.effect(???))
   }
 
   /////////////////////

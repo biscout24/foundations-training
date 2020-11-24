@@ -93,7 +93,7 @@ object IOExercises {
     //   case Some(currentUser) => db.updateUser(user) // otherwise update existing user
     // }
     def flatMap[B](f: A => IO[B]): IO[B] =
-      ???
+      IO.effect(f(unsafeRun()))
 
     // `productL` and `productR` combines the effects of two IOs and discard the value of one them.
     // Use case:
@@ -126,7 +126,7 @@ object IOExercises {
     //         fail(new Exception("")).attempt == succeed(Failure(new Exception(""))).
     // Note that `attempt` guarantees `unsafeRun()` will not throw an exception.
     def attempt: IO[Try[A]] =
-      ???
+      IO.effect(Try(unsafeRun()))
 
     // 2d. Implement `handleErrorWith` which allows to catch a failing IO
     // such as fail(new Exception("")).handleErrorWith(_ => someIO) == someIO
@@ -136,13 +136,11 @@ object IOExercises {
     //         } == succeed(2)
     // Use case:
     // handleErrorWith(e => IO.effect(log.error("Operation failed"), e))
-    def handleErrorWith(f: Throwable => IO[A]): IO[A] =
-      ???
+    def handleErrorWith(f: Throwable => IO[A]): IO[A] = attempt.flatMap(_.fold(f, IO.succeed))
 
     // 2e. Implement `retryOnce` which re-runs the current IO if it fails.
     // Try first to use `attempt`
-    def retryOnce: IO[A] =
-      ???
+    def retryOnce: IO[A] = attempt.map(_.getOrElse(IO.effect(unsafeRun())))
 
     // 2f. Implement `retryUntilSuccess`
     // similar to `retryOnce` but it retries until the IO succeeds (potentially indefinitely)

@@ -7,14 +7,23 @@ import exercises.function.HttpClientBuilder
 import exercises.function.HttpClientBuilder._
 
 import scala.annotation.tailrec
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.Random
+import scala.util.{Random, Try}
 
+import scala.concurrent.ExecutionContext.Implicits._
 // you can run and print things here
 object FunctionApp extends App {
   import FunctionExercises._
 
   println("Hello World!")
+
+  def f() = Future(throw new IllegalStateException("test"))
+  def h() = Future(println(s"AAA ${System.currentTimeMillis()}"))
+
+  def foo(a: Future[Unit], b: Future[Unit]) = a.flatMap(_ => b).onComplete(_ => println("Done"))
+
+  foo(f(), h())
 }
 
 object FunctionExercises {
@@ -28,7 +37,7 @@ object FunctionExercises {
   // Note: Try to use a higher-order function from the String API
   //       You can test this function in FunctionExercisesTest.scala
   def secret(text: String): String =
-    ???
+    text.map(_ => '*')
 
   def isValidUsernameCharacter(char: Char): Boolean =
     char.isLetterOrDigit || char == '-' || char == '_'
@@ -38,7 +47,7 @@ object FunctionExercises {
   // but     isValidUsername("*john*") == false
   // Note: Try to use `isValidUsernameCharacter` and a higher-order function from the String API.
   def isValidUsername(username: String): Boolean =
-    ???
+    username.forall(isValidUsernameCharacter)
 
   ///////////////////////
   // Exercise 2: Point
@@ -50,8 +59,7 @@ object FunctionExercises {
     //         Point(0, 0,0).isPositive == true
     // but     Point(0,-2,1).isPositive == false
     // Note: `isPositive` is a function defined within `Point` class, so `isPositive` has access to `x`, `y` and `z`.
-    def isPositive: Boolean =
-      ???
+    def isPositive: Boolean = forAll(_ >= 0)
 
     // 2b. Implement `isEven` which returns true if `x`, `y` and `z` are all even numbers, false otherwise
     // such as Point(2, 4, 8).isEven == true
@@ -59,16 +67,14 @@ object FunctionExercises {
     // but     Point(3,-2, 0).isEven == false
     // Note: You can use `% 2` to check if a number is odd or even,
     // e.g. 8 % 2 == 0 but 7 % 2 == 1
-    def isEven: Boolean =
-      ???
+    def isEven: Boolean = forAll(_ % 2 == 0)
 
     // 2c. Both `isPositive` and `isEven` check that a predicate holds for `x`, `y` and `z`.
     // Let's try to capture this pattern with a higher order function like `forAll`
     // such as Point(1,1,1).forAll(_ == 1) == true
     // but     Point(1,2,5).forAll(_ == 1) == false
     // Then, re-implement `isPositive` and `isEven` using `forAll`
-    def forAll(predicate: Int => Boolean): Boolean =
-      ???
+    def forAll(predicate: Int => Boolean): Boolean = Seq(x, y, z).forall(predicate)
   }
 
   ////////////////////////////
@@ -117,8 +123,7 @@ object FunctionExercises {
   // 3c. Implement `map` a generic function that converts a `JsonDecoder` of `From`
   // into a `JsonDecoder` of `To`.
   // Bonus: Can you re-implement `userIdDecoder` and `localDateDecoder` using `map`
-  def map[From, To](decoder: JsonDecoder[From], update: From => To): JsonDecoder[To] =
-    ???
+  def map[From, To](decoder: JsonDecoder[From], update: From => To): JsonDecoder[To] = ???
 
   // 3d. Move `map` inside of `JsonDecoder` trait so that we can use the syntax
   // `intDecoder.map(_ + 1)` instead of `map(intDecoder)(_ + 1)`
@@ -131,8 +136,7 @@ object FunctionExercises {
   // but weirdLocalDateDecoder.decode("hello") would throw an Exception
   // Try to think how we could extend JsonDecoder so that we can easily implement
   // other decoders that follow the same pattern.
-  lazy val weirdLocalDateDecoder: JsonDecoder[LocalDate] =
-    ???
+  lazy val weirdLocalDateDecoder: JsonDecoder[LocalDate] = ???
 
   ///////////////////////////////
   // Exercise 4: Data processing
@@ -229,11 +233,12 @@ object FunctionExercises {
     for { i <- xs.indices } xs(i) = xs(i) + 1
 
   // 5h. does `incAll` respect the functional subset? why?
-  def incAll(value: Any): Any = value match {
-    case x: Int    => x + 1
-    case x: Long   => x + 1
-    case x: Double => x + 1
-  }
+  def incAll(value: Any): Any =
+    value match {
+      case x: Int    => x + 1
+      case x: Long   => x + 1
+      case x: Double => x + 1
+    }
 
   /////////////////////////////////
   // Exercise 6: Memoization
