@@ -22,7 +22,7 @@ object OptionExercises {
   // getUserEmail(123, userMap) == Some("e@y.com")
   // getUserEmail(111, userMap) == None // no user
   // getUserEmail(444, userMap) == None // no email
-  def getUserEmail(id: UserId, users: Map[UserId, User]): Option[Email] = ???
+  def getUserEmail(id: UserId, users: Map[UserId, User]): Option[Email] = users.get(id).flatMap(_.email)
 
   case class User(id: UserId, name: String, email: Option[Email])
   case class UserId(value: Long)
@@ -35,7 +35,12 @@ object OptionExercises {
     //         Reader(123, premiumUser = true).optSingleAccountId == Some(123)
     // but     Admin.optSingleAccountId == None
     // Note: you can pattern match on Role using `this match { case Reader(...) => ... }`
-    def optSingleAccountId: Option[AccountId] = ???
+    def optSingleAccountId: Option[AccountId] =
+      this match {
+        case Role.Reader(accountId, premiumUser)  =>
+        case Role.Editor(accountId, favoriteFont) =>
+        case Role.Admin                           =>
+      }
 
     // 1c. Implement `optEditor` which checks if the current `Role` is an `Editor`
     // such as Editor(123, "Comic Sans").optEditor == Some(Editor(123, "Comic Sans"))
@@ -124,7 +129,7 @@ object OptionExercises {
   // but     checkAllDigits(List('a', '1', 'b', 'c', '4')) == None
   // Note: you may want to use listSequence or listTraverse defined below.
   def checkAllDigits(characters: List[Char]): Option[List[Int]] =
-    ???
+    ??? //characters.exists()
 
   def listSequence[A](elements: List[Option[A]]): Option[List[A]] =
     elements.foldRight(Option(List.empty[A])) {

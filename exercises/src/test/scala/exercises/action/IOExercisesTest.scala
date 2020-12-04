@@ -44,6 +44,10 @@ class IOExercisesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks wi
     // TODO
   }
 
+  test("map") {
+    // TODO
+  }
+
   ////////////////////////
   // 4. Testing
   ////////////////////////

@@ -67,7 +67,7 @@ object IOExercises {
   // 2. IO API
   /////////////////////
 
-  trait IO[A] {
+  trait IO[A] { self =>
     import IO._
 
     def unsafeRun(): A
@@ -93,7 +93,7 @@ object IOExercises {
     //   case Some(currentUser) => db.updateUser(user) // otherwise update existing user
     // }
     def flatMap[B](f: A => IO[B]): IO[B] =
-      IO.effect(f(unsafeRun()))
+      IO.effect(f(unsafeRun()).unsafeRun())
 
     // `productL` and `productR` combines the effects of two IOs and discard the value of one them.
     // Use case:
@@ -140,7 +140,7 @@ object IOExercises {
 
     // 2e. Implement `retryOnce` which re-runs the current IO if it fails.
     // Try first to use `attempt`
-    def retryOnce: IO[A] = attempt.map(_.getOrElse(IO.effect(unsafeRun())))
+    def retryOnce: IO[A] = attempt.map(_.getOrElse(self))
 
     // 2f. Implement `retryUntilSuccess`
     // similar to `retryOnce` but it retries until the IO succeeds (potentially indefinitely)
@@ -216,7 +216,10 @@ object IOExercises {
   }
 
   // 4a. Implement `testClock` which facilitates testing of a Clock API.
-  def testClock(constant: Instant): Clock = ???
+  def testClock(constant: Instant): Clock =
+    new Clock {
+      override val readNow: IO[Instant] = IO.pure(constant)
+    }
 
   trait Console {
     val readLine: IO[String]
@@ -232,8 +235,12 @@ object IOExercises {
 
   // 4b. Implement `testConsole` which facilitates testing of a Console API.
   // Use both `testClock` and `testConsole` to write a test for `userConsoleProgram2` in IOExercisesTest
-  def testConsole(in: ListBuffer[String], out: ListBuffer[String]): Console =
+  def testConsole(in: ListBuffer[String], out: ListBuffer[String]): Console = {
+
+    out.remove(0)
+
     ???
+  }
 
   def userConsoleProgram2(console: Console, clock: Clock): IO[User] =
     for {
@@ -281,7 +288,7 @@ object IOExercises {
   // val userIds: List[UserId] = ...
   // sequence(userIds.map(fetchUser)): IO[List[User]]
   def sequence[A](xs: List[IO[A]]): IO[List[A]] =
-    ???
+    IO.effect(xs.map(_.unsafeRun()))
 
   // `traverse` captures a common use case of `map` followed by `sequence`
   // val userIds: List[UserId] = ...
